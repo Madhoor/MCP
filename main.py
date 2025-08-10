@@ -1,46 +1,47 @@
+#pip install mcp
 from mcp.server.fastmcp import FastMCP
+from tools import GmailTool 
+import sys
 
-#TODO prompt based 
-# create a server 
-mcp = FastMCP("first-one")
-# whatev
+# Ensure proper encoding for stdout and stderr
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8')
+if hasattr(sys.stderr, 'reconfigure'):
+    sys.stderr.reconfigure(encoding='utf-8')
+
+# Initialize the MCP server and the Gmail tool
+mcp = FastMCP('GmailAssistant')
+tool = GmailTool()
+
 @mcp.tool()
-def multiply(a:int,b:int):
-    """Multiply 2 numbers """ 
-    return a*b
-
-# @mcp.prompt()
-
-
-# Example of a prompt function (uncomment and implement as needed)
-@mcp.prompt()
-def prompt(user_query: str) -> str:
+def create_draft(to: str, subject: str, body: str) -> str:
     """
-    Processes natural language queries and can potentially
-    route them to other tools.
+    Creates a draft email with a recipient, subject, and body.
+    
+    Args:
+        to (str): The email address of the recipient.
+        subject (str): The subject line of the email.
+        body (str): The main content of the email.
     """
-    user_query = user_query.lower()
-    if "multiply" in user_query:
-        # Simple example: try to extract numbers and call multiply
-        try:
-            parts = user_query.split()
-            num1 = int(parts[parts.index("multiply") + 1])
-            num2 = int(parts[parts.index("multiply") + 2])
-            result = multiply(num1, num2)
-            return f"The product is: {result}"
-        except (ValueError, IndexError):
-            return "Please provide two numbers after 'multiply'."
-    elif "add" in user_query:
-        # Similar logic for addition
-        pass # Implement extraction and call add()
-    return f"I received your query: '{user_query}'. I don't have a specific tool for that yet."
-# def prompt(string)
+    result = tool.create_draft(to=to, subject=subject, body=body)
+    return result
 
+@mcp.tool()
+def send_email(to: str, subject: str, body: str) -> str:
+    """
+    Sends an email with a recipient, subject, and body.
+    
+    Args:
+        to (str): The email address of the recipient.
+        subject (str): The subject line of the email.
+        body (str): The main content of the email.
+    """
+    result = tool.send_email(to=to, subject=subject, body=body)
+    return result
 
 def main():
-    print("Hello from first-server!")
-
-
+    """Runs the FastMCP server."""
+    mcp.run() 
+    print("SERVER IS RUNNING")
 if __name__ == "__main__":
     main()
-    mcp.run()
